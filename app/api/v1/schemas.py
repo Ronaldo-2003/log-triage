@@ -38,3 +38,12 @@ class PaginatedRecords(BaseModel):
 class LogRecordList(BaseModel):
     records : List[LogRecordOut]
 
+class PatchRecordPayload(BaseModel):
+    job_id : Optional[str] = None
+    service : Optional[str] = None
+    log_text : Optional[str] = None
+    manual_tags : Optional[List[str]] = None
+
+    class Config:
+        extra = "forbid"
+
