@@ -57,6 +57,10 @@ def list_records(
     items : List[dict] = []
 
     for record_id , rec in FAKE_DB.items():
+        
+        # skip soft-deleted records
+        if rec.get("deleted_at") is not None:
+            continue
 
         # filter by job_id if provided
         if job_id is not None and rec.get("job_id") != job_id:
