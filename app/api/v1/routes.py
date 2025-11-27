@@ -1,4 +1,4 @@
-from fastapi import APIRouter , status , HTTPException , Query
+from fastapi import APIRouter , status , HTTPException , Query , Response
 from app.api.v1.schemas import IngestPayload , IngestResponse , LogRecordOut , LogRecordList , IngestManyPayload , PaginatedRecords , PatchRecordPayload
 from datetime import datetime
 from typing import Optional , List
@@ -177,3 +177,17 @@ def patch_record(record_id : int, payload : PatchRecordPayload):
         "parsed" : rec.get("parsed"),
         "tags" : rec.get("manual_tags") or rec.get("tags") ,
     }
+
+@router.delete("/records/{record_id}" , status_code=status.HTTP_204_NO_CONTENT)
+def delete_record(record_id : int):
+    # soft deleting by setting deleted_at
+    rec=FAKE_DB.get(record_id)
+    if not rec:
+        raise HTTPException(status_code=404 , detail="record not found")
+    
+    # if already deleted , treat as idempotent - delete again returns 204
+    if rec.get("deleted_at") is not None:
+        return Response(status_code=204)
+    
+    rec["deleted_at"] = datetime.utcnow()
+    return Response(status_code=204)
