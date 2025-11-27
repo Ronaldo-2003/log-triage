@@ -1,5 +1,5 @@
 from fastapi import APIRouter , status , HTTPException , Query
-from app.api.v1.schemas import IngestPayload , IngestResponse , LogRecordOut , LogRecordList , IngestManyPayload , PaginatedRecords
+from app.api.v1.schemas import IngestPayload , IngestResponse , LogRecordOut , LogRecordList , IngestManyPayload , PaginatedRecords , PatchRecordPayload
 from datetime import datetime
 from typing import Optional , List
 from math import ceil
@@ -147,3 +147,33 @@ def get_record(record_id : int):
 
     return response
 
+@router.patch("/records/{record_id}" , response_model=LogRecordOut)
+def patch_record(record_id : int, payload : PatchRecordPayload):
+    # locate record
+    rec = FAKE_DB.get(record_id)
+    if not rec:
+        raise HTTPException(status_code=404 , detail="record not found")
+    
+    # update record fields only if provided
+    if payload.job_id is not None:
+        rec["job_id"]=payload.job_id
+    if payload.service is not None:
+        rec["service"]=payload.service
+    if payload.log_text is not None:
+        rec["log_text"]=payload.log_text
+    if payload.manual_tags is not None:
+        rec["manual_tags"]=payload.manual_tags
+
+    # set audit timestamp
+    rec["updated_at"]=datetime.utcnow()
+
+    # return updated record in expected format
+    return{
+        "id" : record_id,
+        "log_text" : rec.get("log_text" ,),
+        "job_id" : rec.get("job_id") ,
+        "service" : rec.get("service"),
+        "created_at" : rec.get("created_at"),
+        "parsed" : rec.get("parsed"),
+        "tags" : rec.get("manual_tags") or rec.get("tags") ,
+    }
