@@ -134,6 +134,10 @@ def get_record(record_id : int):
     if not rec:
         raise HTTPException(status_code=404 , detail= "record not found")
     
+    # soft deleted , treat as not found
+    if rec.get("deleted_at") is not None:
+        raise HTTPException(status_code=404 , detail="record not found")
+    
     response = {
         "id" : record_id , 
         "log_text" : rec.get("log_text" , ""),
