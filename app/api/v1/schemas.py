@@ -1,11 +1,11 @@
-from pydantic import BaseModel
+from pydantic import BaseModel , Field
 from typing import Optional,Dict,Any,List
 from datetime import datetime
 
 class IngestPayload(BaseModel):
     job_id : Optional[str] =None
     service : Optional[str] = None
-    log_text : str
+    log_text : str = Field(... , max_length=5000)
 
 class IngestManyPayload(BaseModel):
     logs : List[IngestPayload]
